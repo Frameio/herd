@@ -1,4 +1,4 @@
-defmodule Flock.Discovery do
+defmodule Herd.Discovery do
   @moduledoc """
   Behaviour for implementing service discovery on a given cluster.  This
   will be polled regularly to keep the cluster's state in sync
@@ -7,5 +7,5 @@ defmodule Flock.Discovery do
   @doc """
   Return the node list
   """
-  @callback nodes() :: [Flock.Router.flock_node]
+  @callback nodes() :: [Herd.Router.herd_node]
 end

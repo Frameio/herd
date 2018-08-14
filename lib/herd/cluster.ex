@@ -1,13 +1,13 @@
-defmodule Flock.Cluster do
+defmodule Herd.Cluster do
   @moduledoc """
   Macro for generating a cluster manager.  It will create, populate and refresh
-  a `Flock.Balancer` in an ets table by polling the configured `Flock.Discovery` implementation.
+  a `Herd.Balancer` in an ets table by polling the configured `Herd.Discovery` implementation.
   
   Usage:
 
   ```
-  defmodule MyFlockCluster do
-    use Flock.Cluster, otp_app: :myapp, flock: :myflock
+  defmodule MyHerdCluster do
+    use Herd.Cluster, otp_app: :myapp, herd: :myherd
   end
   ```
   """
@@ -15,21 +15,21 @@ defmodule Flock.Cluster do
 
   defmacro __using__(opts) do
     app   = Keyword.get(opts, :otp_app)
-    flock = Keyword.get(opts, :flock)
+    herd = Keyword.get(opts, :herd)
     health_check = Keyword.get(opts, :health_check, 60_000)
     table_name = :"#{app}_servers"
     quote do
       use GenServer
-      import Flock.Cluster
+      import Herd.Cluster
       require Logger
 
       @otp unquote(app)
-      @flock unquote(flock)
+      @herd unquote(herd)
       @default_delay unquote(health_check)
       @table_name unquote(table_name)
-      @discovery Application.get_env(@otp, @flock)[:discovery]
-      @pool Application.get_env(@otp, @flock)[:pool]
-      @router Application.get_env(@otp, @flock)[:router]
+      @discovery Application.get_env(@otp, @herd)[:discovery]
+      @pool Application.get_env(@otp, @herd)[:pool]
+      @router Application.get_env(@otp, @herd)[:router]
       @health_check unquote(health_check)
 
       def start_link(options) do

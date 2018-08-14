@@ -1,11 +1,11 @@
-defmodule Flock.MixProject do
+defmodule Herd.MixProject do
   use Mix.Project
 
   @version "0.1.0"
 
   def project do
     [
-      app: :flock,
+      app: :herd,
       version: @version,
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
@@ -47,7 +47,7 @@ defmodule Flock.MixProject do
     [
       licenses: ["MIT"],
       maintainers: ["Michael Guarino"],
-      links: %{"GitHub" => "https://github.com/Frameio/flock"}
+      links: %{"GitHub" => "https://github.com/Frameio/herd"}
     ]
   end
 
@@ -56,7 +56,7 @@ defmodule Flock.MixProject do
       main: "readme",
       extras: ["README.md"],
       source_ref: "v#{@version}",
-      source_url: "https://github.com/Frameio/flock"
+      source_url: "https://github.com/Frameio/herd"
     ]
   end
 end

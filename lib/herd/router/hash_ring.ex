@@ -1,8 +1,8 @@
-defmodule Flock.Router.HashRing do
+defmodule Herd.Router.HashRing do
   @moduledoc """
-  Hash Ring implementation of the Flock.Router behavior
+  Hash Ring implementation of the Herd.Router behavior
   """
-  @behaviour Flock.Router
+  @behaviour Herd.Router
 
   def new(), do: HashRing.new()
 

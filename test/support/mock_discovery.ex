@@ -1,6 +1,6 @@
-defmodule Flock.MockDiscovery do
+defmodule Herd.MockDiscovery do
   use GenServer
-  @behaviour Flock.Discovery
+  @behaviour Herd.Discovery
 
   def start_link(), do: GenServer.start_link(__MODULE__, [], name: __MODULE__)
 

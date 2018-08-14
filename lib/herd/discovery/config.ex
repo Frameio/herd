@@ -1,8 +1,8 @@
-defmodule Flock.Discovery.Config do
+defmodule Herd.Discovery.Config do
   @moduledoc """
   Creates config based service discovery with
   ```
-  use Flock.Discovery.Config, path: {:app, :key}
+  use Herd.Discovery.Config, path: {:app, :key}
   ```
   """
 

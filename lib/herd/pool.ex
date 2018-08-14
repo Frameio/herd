@@ -1,6 +1,6 @@
-defmodule Flock.Pool do
+defmodule Herd.Pool do
   @moduledoc """
-  Builds a connection pool manager for a given flock.  The manager has a number of overrideable
+  Builds a connection pool manager for a given herd.  The manager has a number of overrideable
   functions, including:
 
   * spec_for_node/1 - infers a child spec for a given node in the cluster
@@ -13,8 +13,8 @@ defmodule Flock.Pool do
   Use with:
 
   ```
-  defmodule MyFlockPool do
-    use Flock.Pool, otp_app: :myapp, flock: :myflock
+  defmodule MyHerdPool do
+    use Herd.Pool, otp_app: :myapp, herd: :myherd
   end
   ```
   """
@@ -22,7 +22,7 @@ defmodule Flock.Pool do
     app = Keyword.get(opts, :otp_app)
     quote do
       use DynamicSupervisor
-      import Flock.Pool
+      import Herd.Pool
 
       alias Memcachir.Util
 

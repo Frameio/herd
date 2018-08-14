@@ -1,23 +1,23 @@
-defmodule Flock.Supervisor do
+defmodule Herd.Supervisor do
   @moduledoc """
-  Creates a Supervisor for the flock's internal registry, it's pool of pools,
+  Creates a Supervisor for the herd's internal registry, it's pool of pools,
   and the cluster.  Use with:
 
   ```
-  defmodule MyFlockSupervisor do
-    use Flock.Supervisor, otp_app: :my_app, flock: :my_flock
+  defmodule MyHerdSupervisor do
+    use Herd.Supervisor, otp_app: :my_app, herd: :my_herd
   end
   """
   defmacro __using__(opts) do
     app   = Keyword.get(opts, :otp_app)
-    flock = Keyword.get(opts, :flock)
+    herd = Keyword.get(opts, :herd)
     quote do
       use Supervisor
       @otp unquote(app)
-      @flock unquote(flock)
-      @flock Application.get_env(@otp, @flock)
-      @pool @flock[:pool]
-      @cluster @flock[:cluster]
+      @herd unquote(herd)
+      @herd Application.get_env(@otp, @herd)
+      @pool @herd[:pool]
+      @cluster @herd[:cluster]
 
       @supervisor_config Application.get_env(@otp, __MODULE__, [])
 

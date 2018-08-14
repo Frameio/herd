@@ -1,16 +1,16 @@
-defmodule Flock.MockCluster do
-  use Flock.Cluster, otp_app: :flock, flock: :test
+defmodule Herd.MockCluster do
+  use Herd.Cluster, otp_app: :herd, herd: :test
 end
 
-defmodule Flock.MockPool do
-  use Flock.Pool, otp_app: :flock, flock: :test
+defmodule Herd.MockPool do
+  use Herd.Pool, otp_app: :herd, herd: :test
 end
 
-defmodule Flock.MockSupervisor do
-  use Flock.Supervisor, otp_app: :flock, flock: :test
+defmodule Herd.MockSupervisor do
+  use Herd.Supervisor, otp_app: :herd, herd: :test
 end
 
-defmodule Flock.MockWorker do
+defmodule Herd.MockWorker do
   use GenServer
   def start_link(name), do: GenServer.start_link(__MODULE__, name)
 

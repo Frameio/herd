@@ -1,7 +1,7 @@
-defmodule FlockTest do
+defmodule HerdTest do
   use ExUnit.Case, async: false
 
-  alias Flock.{
+  alias Herd.{
     MockDiscovery,
     MockCluster,
     MockPool
@@ -56,7 +56,7 @@ defmodule FlockTest do
     :ok = MockDiscovery.update(nodes)
     send_health_check()
 
-    assert Registry.lookup(Flock.MockPool.Registry, :localhost_234) == []
+    assert Registry.lookup(Herd.MockPool.Registry, :localhost_234) == []
 
     verify_nodes_equal(nodes)
     verify_nodes_present(nodes)
