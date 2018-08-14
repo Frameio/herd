@@ -24,7 +24,11 @@ defmodule Herd.Router.HashRing do
     |> Enum.map(&get_node(ring, &1))
     |> case do
       [{:error, _} | _] -> {:error, :invalid_ring}
-      nodes -> {:ok, keys |> Enum.zip(nodes) |> Enum.into(%{})}
+      nodes -> {:ok, keys |> Enum.zip(drop_ok(nodes)) |> Enum.into(%{})}
     end
   end
+
+  defp drop_ok(nodes) when is_list(nodes), do: Enum.map(nodes, &drop_ok/1)
+  defp drop_ok({:ok, node}), do: node
+  defp drop_ok(node), do: node
 end
