@@ -27,14 +27,12 @@ defmodule Herd.Pool do
       alias Memcachir.Util
 
       @otp unquote(app)
-      @config Application.get_env(@otp, __MODULE__, [])
       @default_pool_config [
         strategy: :lifo,
         size: 10,
         max_overflow: 10
       ]
       @registry Module.concat(__MODULE__, Registry)
-      @pool_config @default_pool_config |> Keyword.merge(@config)
 
       def start_link(options) do
         DynamicSupervisor.start_link(__MODULE__, options, name: __MODULE__)
@@ -44,15 +42,15 @@ defmodule Herd.Pool do
         DynamicSupervisor.init(strategy: :one_for_one)
       end
 
-      def spec_for_node(node) do 
-        pool_config = @pool_config |> Keyword.put(:name, poolname(node))
+      def spec_for_node(node) do
+        pool_config = pool_config() |> Keyword.put(:name, poolname(node))
         name = nodename(node)
         %{id: name, start: {:poolboy, :start_link, [pool_config, worker_config(node)]}}
       end
 
       def poolname(node), do: {:via, Registry, {@registry, nodename(node)}}
 
-      def nodename({host, port}), do: :"#{host}_#{port}" 
+      def nodename({host, port}), do: :"#{host}_#{port}"
 
       def worker_config(node), do: nodename(node)
 
@@ -66,6 +64,10 @@ defmodule Herd.Pool do
       def initialize(servers), do: handle_diff(servers, [])
 
       def handle_diff(adds, removes), do: handle_diff(__MODULE__, adds, removes)
+
+      defp config(), do: Application.get_env(@otp, __MODULE__, [])
+
+      defp pool_config(), do: @default_pool_config |> Keyword.merge(config())
 
       defoverridable [spec_for_node: 1, nodename: 1, poolname: 1, worker_config: 1]
     end
