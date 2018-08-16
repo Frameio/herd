@@ -43,9 +43,12 @@ defmodule Herd.Pool do
       end
 
       def spec_for_node(node) do
-        pool_config = pool_config() |> Keyword.put(:name, poolname(node))
+        pool = pool_conf()
+               |> Keyword.put(:name, poolname(node))
+               |> pool_config()
+
         name = nodename(node)
-        %{id: name, start: {:poolboy, :start_link, [pool_config, worker_config(node)]}}
+        %{id: name, start: {:poolboy, :start_link, [pool, worker_config(node)]}}
       end
 
       def poolname(node), do: {:via, Registry, {@registry, nodename(node)}}
@@ -53,6 +56,8 @@ defmodule Herd.Pool do
       def nodename({host, port}), do: :"#{host}_#{port}"
 
       def worker_config(node), do: nodename(node)
+
+      def pool_config(config), do: config
 
       def start_node({host, port} = node) do
         spec = spec_for_node(node)
@@ -67,9 +72,9 @@ defmodule Herd.Pool do
 
       defp config(), do: Application.get_env(@otp, __MODULE__, [])
 
-      defp pool_config(), do: @default_pool_config |> Keyword.merge(config())
+      defp pool_conf(), do: @default_pool_config |> Keyword.merge(config())
 
-      defoverridable [spec_for_node: 1, nodename: 1, poolname: 1, worker_config: 1]
+      defoverridable [spec_for_node: 1, nodename: 1, poolname: 1, worker_config: 1, pool_config: 1]
     end
   end
 
