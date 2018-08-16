@@ -7,57 +7,64 @@ defmodule Herd.Cluster do
 
   ```
   defmodule MyHerdCluster do
-    use Herd.Cluster, otp_app: :myapp, herd: :myherd
+    use Herd.Cluster, otp_app: :myapp,
+                      router: MyRouter,
+                      discovery: MyDiscovery,
+                      pool: MyPool
   end
   ```
   """
   require Logger
 
   defmacro __using__(opts) do
-    app   = Keyword.get(opts, :otp_app)
-    herd = Keyword.get(opts, :herd)
+    app          = Keyword.get(opts, :otp_app)
     health_check = Keyword.get(opts, :health_check, 60_000)
+    router       = Keyword.get(opts, :router, Herd.Router.HashRing)
+    discovery    = Keyword.get(opts, :discovery)
+    pool         = Keyword.get(opts, :pool)
     table_name = :"#{app}_servers"
+
     quote do
       use GenServer
       import Herd.Cluster
       require Logger
 
       @otp unquote(app)
-      @herd unquote(herd)
       @table_name unquote(table_name)
       @health_check unquote(health_check)
+      @router unquote(router)
+      @discovery unquote(discovery)
+      @pool unquote(pool)
 
       def start_link(options) do
         GenServer.start_link(__MODULE__, options, name: __MODULE__)
       end
 
       def init(_) do
-        servers = discovery().nodes()
+        servers = @discovery.nodes()
         Logger.info("starting cluster with servers: #{inspect(servers)}")
-        router = router()
 
         ring =
-          router.new()
-          |> router.add_nodes(servers)
+          @router.new()
+          |> @router.add_nodes(servers)
 
         table = :ets.new(@table_name, [:set, :protected, :named_table, read_concurrency: true])
         :ets.insert(table, {:lb, ring})
-        pool().initialize(servers)
+        @pool.initialize(servers)
         schedule_healthcheck()
 
         {:ok, table}
       end
 
-      def servers(), do: servers(@table_name, router())
+      def servers(), do: servers(@table_name, @router)
 
-      def get_node(key), do: get_node(@table_name, router(), key)
+      def get_node(key), do: get_node(@table_name, @router, key)
 
-      def get_nodes(keys), do: get_nodes(@table_name, router(), keys)
+      def get_nodes(keys), do: get_nodes(@table_name, @router, keys)
 
       def handle_info(:health_check, table) do
         schedule_healthcheck()
-        health_check(table, router(), pool(), discovery())
+        health_check(table, @router, @pool, @discovery)
       end
 
       defp get_router(), do: get_router(@table_name)
@@ -65,14 +72,6 @@ defmodule Herd.Cluster do
       defp schedule_healthcheck() do
         Process.send_after(self(), :health_check, @health_check)
       end
-
-      def config(), do: Application.get_env(@otp, @herd)
-
-      def router(), do: config()[:router]
-
-      def pool(), do: config()[:pool]
-
-      def discovery(), do: config()[:discovery]
     end
   end
 

@@ -26,29 +26,21 @@ ets table of all the current nodes to balance across, the pool supervises connec
 
 ```elixir
 defmodule Herd.MockCluster do
-  use Herd.Cluster, otp_app: :herd, herd: :test
+  use Herd.Cluster, otp_app: :herd,
+                    pool: Herd.MockPool,
+                    discovery: MyDiscovery,
+                    router: MyRouter # defaults to Herd.Router.HashRing
 end
 
 defmodule Herd.MockPool do
-  use Herd.Pool, otp_app: :herd, herd: :test
+  use Herd.Pool, otp_app: :herd
 end
 
 defmodule Herd.MockSupervisor do
-  use Herd.Supervisor, otp_app: :herd, herd: :test
+  use Herd.Supervisor, otp_app: :herd
+                       pool: Herd.MockPool,
+                       cluster: Herd.MockCluster
 end
-```
-
-Then they are configured like: 
-
-```elixir
-config :herd, :test, # for the :test herd name under the :herd app
-  discovery: Herd.MockDiscovery,
-  cluster: Herd.MockCluster,
-  pool: Herd.MockPool,
-  router: Herd.Router.HashRing
-
-config :herd, Herd.MockPool,
-  worker_module: Herd.MockWorker # configure the poolboy worker
 ```
 
 You would then need to add `Herd.MockSupervisor` to your application's supervision tree.

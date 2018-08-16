@@ -1,13 +1,18 @@
 defmodule Herd.MockCluster do
-  use Herd.Cluster, otp_app: :herd, herd: :test
+  use Herd.Cluster, otp_app: :herd,
+                    pool: Herd.MockPool,
+                    discovery: Herd.MockDiscovery,
+                    router: Herd.Router.HashRing # defaults to Herd.Router.HashRing
 end
 
 defmodule Herd.MockPool do
-  use Herd.Pool, otp_app: :herd, herd: :test
+  use Herd.Pool, otp_app: :herd
 end
 
 defmodule Herd.MockSupervisor do
-  use Herd.Supervisor, otp_app: :herd, herd: :test
+  use Herd.Supervisor, otp_app: :herd,
+                       pool: Herd.MockPool,
+                       cluster: Herd.MockCluster
 end
 
 defmodule Herd.MockWorker do

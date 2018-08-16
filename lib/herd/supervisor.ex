@@ -5,16 +5,20 @@ defmodule Herd.Supervisor do
 
   ```
   defmodule MyHerdSupervisor do
-    use Herd.Supervisor, otp_app: :my_app, herd: :my_herd
+    use Herd.Supervisor, otp_app: :my_app,
+                         cluster: MyCluster,
+                         pool: MyPool
   end
   """
   defmacro __using__(opts) do
-    app   = Keyword.get(opts, :otp_app)
-    herd = Keyword.get(opts, :herd)
+    app     = Keyword.get(opts, :otp_app)
+    pool    = Keyword.get(opts, :pool)
+    cluster = Keyword.get(opts, :cluster)
     quote do
       use Supervisor
       @otp unquote(app)
-      @herd unquote(herd)
+      @pool unquote(pool)
+      @cluster unquote(cluster)
 
 
       def start_link(options) do
@@ -23,24 +27,18 @@ defmodule Herd.Supervisor do
 
       def init(options) do
         opts = Keyword.put(supervisor_config(), :strategy, :one_for_one)
-        conf = config()
-
-        pool    = conf[:pool]
-        cluster = conf[:cluster]
 
         children = [
           # needs to be started FIRST
-          worker(Registry, [[name: Module.concat(pool, Registry), keys: :unique]]),
-          supervisor(pool, [options]),
-          worker(cluster, [options]),
+          worker(Registry, [[name: Module.concat(@pool, Registry), keys: :unique]]),
+          supervisor(@pool, [options]),
+          worker(@cluster, [options]),
         ]
 
         supervise(children, opts)
       end
 
       def supervisor_config(), do: Application.get_env(@otp, __MODULE__, [])
-
-      def config(), do: Application.get_env(@otp, @herd)
     end
   end
 end
