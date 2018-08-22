@@ -1,6 +1,8 @@
 defmodule Herd.Discovery.Config do
   @moduledoc """
-  Creates config based service discovery with
+  Config based service discovery for static clusters.
+
+  Usage:
   ```
   use Herd.Discovery.Config, path: {:app, :key}
   ```

@@ -17,6 +17,10 @@ defmodule Herd.Pool do
     use Herd.Pool, otp_app: :myapp, herd: :myherd
   end
   ```
+
+  This will spawn a pool for each node in the cluster and register them against a registry named
+  `MyHerdPool.Registry`.  It also is responsible for handling node ups/downs from the clusters
+  sporadic health check.
   """
   defmacro __using__(opts) do
     app = Keyword.get(opts, :otp_app)

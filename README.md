@@ -1,8 +1,8 @@
 # Herd
 
 Herd is a pure elixir client for a clustered system like memcached, redis or etcd.  It can launch
-(supervised) connection pools for each node, pool a service discovery mechanism to keep the cluster
-in sync, and route to individual nodes using a configurable mechanism.
+(supervised) connection pools for each node, polls a service discovery mechanism to keep the cluster in sync, and route to individual nodes using an arbitrary routing mechanism, defaulting to
+hashring based routing.
 
 The library is designed to be as pluggable as possible, so it's built around a few generator macros
 that will define all the components you'll need to create a clustered connection.
@@ -14,7 +14,7 @@ The package can be installed by adding `herd` to your list of dependencies in `m
 ```elixir
 def deps do
   [
-    {:herd, "~> 0.1.0"}
+    {:herd, "~> 0.4.2"}
   ]
 end
 ```
