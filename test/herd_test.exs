@@ -6,7 +6,7 @@ defmodule HerdTest do
     MockCluster,
     MockPool
   }
-  
+
   setup do
     node = {"localhost", 123}
     :ok = MockDiscovery.update([node])
@@ -63,6 +63,21 @@ defmodule HerdTest do
 
     nodes = [{"localhost", 567}, {"localhost", 234}]
     :ok = MockDiscovery.update(nodes)
+    send_health_check()
+
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+  end
+
+  test "It won't drain a cluster" do
+    nodes = [{"localhost", 567}, {"localhost", 234}]
+    :ok = MockDiscovery.update(nodes)
+    send_health_check()
+
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+
+    :ok = MockDiscovery.update([])
     send_health_check()
 
     verify_nodes_equal(nodes)

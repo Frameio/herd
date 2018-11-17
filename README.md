@@ -14,7 +14,7 @@ The package can be installed by adding `herd` to your list of dependencies in `m
 ```elixir
 def deps do
   [
-    {:herd, "~> 0.4.2"}
+    {:herd, "~> 0.4.3"}
   ]
 end
 ```

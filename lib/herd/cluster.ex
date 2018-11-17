@@ -84,14 +84,8 @@ defmodule Herd.Cluster do
   end
 
   def health_check(table, router, pool, discovery) do
-    servers = discovery.nodes() |> MapSet.new()
-    {:ok, lb} = get_router(table)
-    current = router.nodes(lb) |> MapSet.new()
-
-    added   = MapSet.difference(servers, current) |> MapSet.to_list()
-    removed = MapSet.difference(current, servers) |> MapSet.to_list()
-
-    handle_diff(added, removed, lb, router, pool, table)
+    servers = discovery.nodes()
+    do_health_check(table, router, pool, servers)
   end
 
   def get_router(table) do
@@ -106,6 +100,19 @@ defmodule Herd.Cluster do
       {:ok, lb} -> router.nodes(lb)
       _ -> []
     end
+  end
+
+  # never drain the cluster to guard against bad service disco methods
+  defp do_health_check(table, _router, _pool, []), do: {:noreply, table}
+  defp do_health_check(table, router, pool, nodes) do
+    servers   = MapSet.new(nodes)
+    {:ok, lb} = get_router(table)
+    current   = router.nodes(lb) |> MapSet.new()
+
+    added   = MapSet.difference(servers, current) |> MapSet.to_list()
+    removed = MapSet.difference(current, servers) |> MapSet.to_list()
+
+    handle_diff(added, removed, lb, router, pool, table)
   end
 
   defp handle_diff([], [], _, _, _, table), do: {:noreply, table}
