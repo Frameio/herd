@@ -10,6 +10,7 @@ defmodule HerdTest do
   setup do
     node = {"localhost", 123}
     :ok = MockDiscovery.update([node])
+    clear_marked()
     send_health_check()
     :ok
   end
@@ -84,6 +85,27 @@ defmodule HerdTest do
     verify_nodes_present(nodes)
   end
 
+  test "It will exclude marked nodes" do
+    nodes = [{"localhost", 567}, {"localhost", 234}]
+    :ok = MockDiscovery.update(nodes)
+    send_health_check()
+
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+
+    MockCluster.mark_node({"localhost", 567})
+    verify_nodes_equal([{"localhost", 234}])
+    verify_nodes_present([{"localhost", 234}])
+
+    send_health_check()
+    verify_nodes_equal([{"localhost", 234}])
+    verify_nodes_present([{"localhost", 234}])
+
+    MockCluster.mark_node({"localhost", 234})
+    verify_nodes_equal([{"localhost", 234}])
+    verify_nodes_present([{"localhost", 234}])
+  end
+
   defp verify_nodes_equal(nodes) do
     servers = MockCluster.servers()
     assert MapSet.equal?(MapSet.new(servers), MapSet.new(nodes))
@@ -96,6 +118,10 @@ defmodule HerdTest do
         assert GenServer.call(worker, :name) == MockPool.nodename(node)
       end)
     end
+  end
+
+  defp clear_marked() do
+    GenServer.call(MockCluster, :clear_marked)
   end
 
   defp send_health_check() do

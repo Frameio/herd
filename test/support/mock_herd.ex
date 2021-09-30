@@ -3,6 +3,14 @@ defmodule Herd.MockCluster do
                     pool: Herd.MockPool,
                     discovery: Herd.MockDiscovery,
                     router: Herd.Router.HashRing # defaults to Herd.Router.HashRing
+
+  def clear_marked do
+    GenServer.call(__MODULE__, :clear_marked)
+  end
+
+  def handle_call(:clear_marked, _from, state) do
+    {:reply, :ok, %Herd.Cluster.State{state | marked_nodes: MapSet.new(), restored_nodes: []}}
+  end
 end
 
 defmodule Herd.MockPool do
