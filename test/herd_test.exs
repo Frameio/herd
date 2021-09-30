@@ -84,6 +84,50 @@ defmodule HerdTest do
     verify_nodes_present(nodes)
   end
 
+  test "It will add a node" do
+    nodes = [{"localhost", 123}]
+    :ok = MockDiscovery.update(nodes)
+    send_health_check()
+
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+
+    assert :ok = MockCluster.add_node({"localhost", 345})
+
+    nodes = [{"localhost", 123}, {"localhost", 345}]
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+  end
+
+  test "It will remove a node" do
+    nodes = [{"localhost", 123}, {"localhost", 234}]
+    :ok = MockDiscovery.update(nodes)
+    send_health_check()
+
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+
+    assert :ok = MockCluster.remove_node({"localhost", 234})
+
+    nodes = [{"localhost", 123}]
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+  end
+
+  test "It won't remove all nodes" do
+    nodes = [{"localhost", 123}]
+    :ok = MockDiscovery.update(nodes)
+    send_health_check()
+
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+
+    assert :ok = MockCluster.remove_node({"localhost", 123})
+
+    verify_nodes_equal(nodes)
+    verify_nodes_present(nodes)
+  end
+
   defp verify_nodes_equal(nodes) do
     servers = MockCluster.servers()
     assert MapSet.equal?(MapSet.new(servers), MapSet.new(nodes))

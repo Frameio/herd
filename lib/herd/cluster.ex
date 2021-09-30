@@ -62,6 +62,20 @@ defmodule Herd.Cluster do
 
       def get_nodes(keys), do: get_nodes(@table_name, @router, keys)
 
+      def add_node(node), do: GenServer.call(__MODULE__, {:add_node, node})
+
+      def remove_node(node), do: GenServer.call(__MODULE__, {:remove_node, node})
+
+      def handle_call({:add_node, node}, _from, state) do
+        add_node(@table_name, @router, @pool, node)
+        {:reply, :ok, state}
+      end
+
+      def handle_call({:remove_node, node}, _from, state) do
+        remove_node(@table_name, @router, @pool, node)
+        {:reply, :ok, state}
+      end
+
       def handle_info(:health_check, table) do
         schedule_healthcheck()
         health_check(table, @router, @pool, @discovery)
@@ -81,6 +95,39 @@ defmodule Herd.Cluster do
 
   def get_nodes(table, router, keys) do
     with {:ok, lb} <- get_router(table), do: router.get_nodes(lb, keys)
+  end
+
+  def add_node(table, router, pool, node) do
+    {:ok, lb} = get_router(table)
+    current   = router.nodes(lb) |> MapSet.new()
+    add       = MapSet.put(current, node) |> MapSet.difference(current) |> MapSet.to_list()
+
+    Logger.info "Added #{inspect(add)} servers to cluster"
+    lb = router.add_nodes(lb, add)
+
+    :ets.insert(table, {:lb, lb})
+    pool.handle_diff(add, [])
+    :ok
+  end
+
+  def remove_node(table, router, pool, node) do
+    {:ok, lb} = get_router(table)
+    current   = router.nodes(lb) |> MapSet.new()
+    without   = MapSet.delete(current, node)
+
+    case MapSet.size(without) do
+      0 ->
+        # don't completely drain the cluster
+        :ok
+      _ ->
+        remove = MapSet.difference(current, without) |> MapSet.to_list()
+        Logger.info "Removed #{inspect(remove)} servers from cluster"
+        lb = router.remove_nodes(lb, remove)
+
+        :ets.insert(table, {:lb, lb})
+        pool.handle_diff([], remove)
+        :ok
+    end
   end
 
   def health_check(table, router, pool, discovery) do
